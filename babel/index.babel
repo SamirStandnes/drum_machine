@@ -1,0 +1,194 @@
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      power: true,
+      bank: false,
+      volume: 0.5,
+      currentAudioName: "",
+      keyboard: [
+        {
+          keysign: "Q",
+          keytrigger: 81,
+          audio: "https://s3.amazonaws.com/freecodecamp/drums/Heater-1.mp3",
+          name: "Heater"
+        },
+        {
+          keysign: "W",
+          keytrigger: 87,
+          audio: "https://s3.amazonaws.com/freecodecamp/drums/Heater-3.mp3",
+          name: "HEE"
+        },
+        {
+          keysign: "E",
+          keytrigger: 69,
+          audio: "https://s3.amazonaws.com/freecodecamp/drums/Brk_Snr.mp3",
+          name: "Bark"
+        },
+        {
+          keysign: "A",
+          keytrigger: 65,
+          audio: "https://s3.amazonaws.com/freecodecamp/drums/Kick_n_Hat.mp3 ",
+          name: "Kick-n-hat"
+        },
+        {
+          keysign: "S",
+          keytrigger: 83,
+          audio: "https://s3.amazonaws.com/freecodecamp/drums/RP4_KICK_1.mp3",
+          name: "Kick"
+        },
+        {
+          keysign: "D",
+          keytrigger: 68,
+          audio: "https://s3.amazonaws.com/freecodecamp/drums/Chord_1.mp3",
+          name: "Chord"
+        },
+        {
+          keysign: "Z",
+          keytrigger: 90,
+          audio:
+            "https://s3.amazonaws.com/freecodecamp/drums/Give_us_a_light.mp3",
+          name: "Give light"
+        },
+        {
+          keysign: "X",
+          keytrigger: 88,
+          audio: "https://s3.amazonaws.com/freecodecamp/drums/Dry_Ohh.mp3",
+          name: "Dry-Ohh"
+        },
+        {
+          keysign: "C",
+          keytrigger: 67,
+          audio: "https://s3.amazonaws.com/freecodecamp/drums/Bld_H1.mp3",
+          name: "H!"
+        }
+      ]
+    };
+    this.powerSwitch = this.powerSwitch.bind(this);
+    this.playSound = this.playSound.bind(this);
+    this.handleClick = this.handleClick.bind(this);
+    this.keyDown = this.keyDown.bind(this);
+    this.adjustVolume = this.adjustVolume.bind(this);
+  }
+
+  powerSwitch() {
+    this.setState({
+      power: !this.state.power
+    });
+    document.getElementById("display").innerHTML ='';
+  }
+
+  playSound(obj) {
+    let audio = document.getElementById(obj.keysign);
+    document.getElementById("display").innerHTML = obj.name;
+    console.log(audio);
+    let volume = this.state.volume;
+    audio.volume = volume;
+    audio.currentTime = 0;
+    audio.play();
+    this.setState({
+      currentAudioName: obj.name
+    });
+  }
+
+  handleClick(event_id) {
+    let obj = this.state.keyboard.find(o => o.keysign === event_id);
+    console.log(obj);
+    this.playSound(obj);
+  }
+
+  keyDown(event) {
+    let keytrigger = event.keyCode;
+    console.log(keytrigger);
+    let obj = this.state.keyboard.find(o => o.keytrigger === keytrigger);
+    this.playSound(obj);
+  }
+
+  componentDidMount() {
+    document.addEventListener("keydown", this.keyDown, false);
+  }
+  componentWillUnmount() {
+    document.removeEventListener("keydown", this.keyDown, false);
+  }
+
+  adjustVolume(event) {
+    let volume = event.target.value / 100;
+    this.setState({
+      volume: volume
+    });
+    console.log(volume, event);
+  }
+
+  render() {
+    return (
+      <div id="drum-machine">
+        <div className="blockOne">
+          <Drum
+            handleClick={this.handleClick}
+            keyboard={this.state.keyboard}
+            power={this.state.power}
+          />
+        </div>
+        <div className="blockTwo">
+          <Power power={this.state.power} powerSwitch={this.powerSwitch} />
+          <div id="display"> </div>
+          <Volume adjustVolume={this.adjustVolume} volume={this.state.volume} />
+        </div>
+      </div>
+    );
+  }
+}
+
+const Drum = props => {
+  return (
+    <div>
+      {props.keyboard.map((e, index) => {
+        return (
+          <button
+            className="drum-pad"
+            key={`${e.keysign}`}
+            id={`${e.name}`}
+            onClick={props.handleClick.bind(this, e.keysign)}
+            disabled={!props.power}
+          >
+            {e.keysign}
+            <audio id={`${e.keysign}`} className="clip" src={e.audio} />
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+const Volume = props => {
+  return (
+    <input
+      type="range"
+      min="0"
+      max="100"
+      onChange={props.adjustVolume}
+      className="slider"
+    />
+  );
+};
+
+const Power = props => {
+  return (
+    <label className="switch-button">
+      <input type="checkbox" />
+      <span
+        className="switch-thumb"
+        id="switch-thumb"
+        style={!props.power ? { color: " #1E5631" } : { color: "#76BA1B" }}
+        onClick={props.powerSwitch}
+      >
+        {" "}
+        {props.power ? "" : "OFF"}{" "}
+      </span>
+    </label>
+  );
+};
+
+const Bank = () => {}; {/* Not implementing another set of sounds to toggle to for now. */}
+
+ReactDOM.render(<App />, document.getElementById("root"));
